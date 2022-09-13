@@ -15,7 +15,7 @@ torch.autograd.set_detect_anomaly(False)
 torch.autograd.profiler.profile(False)
 torch.autograd.profiler.emit_nvtx(False)
 
-PATH = 'C:/Users/Artem/Desktop/Data_Science/My_programms/BoostResNet DL course project/src/baseline/data'
+PATH = 'path_to_folder/data'
 BATCH_SIZE = 512
 LR = 0.001
 WEIGHT_DECAY = 5e-4
