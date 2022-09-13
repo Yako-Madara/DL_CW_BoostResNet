@@ -6,8 +6,8 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 from model.resnet50model import ResNet50
-from modelbuilder import ModelBuilder
-from utils import MetricCollector, plot_summary, mem_start, mem_end
+from utils.modelbuilder import ModelBuilder
+from utils.utils import MetricCollector, plot_summary, mem_start, mem_end
 plt.style.use('default')
 
 # Отключаем средства дебаггинга
