@@ -19,7 +19,7 @@ PATH = 'path_to_folder/data'
 BATCH_SIZE = 512
 LR = 0.001
 WEIGHT_DECAY = 5e-4
-EPOCHS = 5 #maximum iterations before stopping train layer
+EPOCHS = 1 # обучение на 2 эпохах и более не имеет большого смысла
 USE_AMP = True
 BLOCKS = 17
 
@@ -190,5 +190,6 @@ if __name__ == '__main__':
     mem_start()
     main(model)
     mem_end()
+    torch.save(model.state_dict(), 'model_name')
     plot_summary(collector)
 
