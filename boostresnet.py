@@ -19,11 +19,11 @@ PATH = 'path_to_folder/data'
 BATCH_SIZE = 512
 LR = 0.001
 WEIGHT_DECAY = 5e-4
-EPOCHS = 1 #maximum iterations before stopping train layer
+EPOCHS = 5 #maximum iterations before stopping train layer
 USE_AMP = True
 BLOCKS = 17
 
-def get_device(benchmark=False):
+def get_device(benchmark=True):
     # Определим устройство
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if device == 'cuda' and benchmark:
@@ -60,7 +60,7 @@ collector = MetricCollector(BLOCKS, EPOCHS)
 
 def main(model):
     device = get_device()
-
+    model = model.to(device)
     # Загрузим датасет CIFAR-10 train
     cifar_train = torchvision.datasets.CIFAR10(root=PATH, 
                                             train=True, 
@@ -88,7 +88,7 @@ def main(model):
     for n in range(BLOCKS):
         ModelTmp = ModelBuilder(model, AllBlocks, n)
         ModelTmp = ModelTmp.to(device)
-        optimizer = torch.optim.Adam(ModelTmp.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
+        optimizer = torch.optim.AdamW(ModelTmp.parameters())
         
         for epoch in range(EPOCHS):
             train_err = 0
@@ -98,23 +98,18 @@ def main(model):
             model.train()
             for batch in train_loader_cifar:
                 X, y = batch
-                #X, y = X.to(device), y.to(device)
+                X, y = X.to(device), y.to(device)
 
-                for i in range(n): 
-                    AllBlocks[i] = AllBlocks[i].to('cpu')
+                for i in range(n):
                     X = AllBlocks[i](X)
                     
-                X, y = X.to(device), y.to(device)
+                with torch.autocast(device_type=device, dtype=torch.float16):
+                    output = ModelTmp(X)
+                    loss = loss_fn(output, y)
                 
-            # with torch.autocast(device_type=device, dtype=torch.float16):
-                output = ModelTmp(X)
-                loss = loss_fn(output, y)
-                
-                #scaler.scale(loss).backward()
-                #scaler.step(optimizer)
-                #scaler.update()
-                loss.backward()
-                optimizer.step()
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
                 
                 # Посчитаем ошибку
                 train_err += loss.item() * X.size(0)
@@ -151,12 +146,11 @@ def main(model):
             with torch.no_grad():
                 for batch in val_loader_cifar:
                     X, y = batch
-                    #X, y = X.to(device), y.to(device)
+                    X, y = X.to(device), y.to(device)
         
                     for i in range(n): 
                         X = AllBlocks[i](X)
                     
-                    X, y = X.to(device), y.to(device)
                     output = ModelTmp(X)
                     loss = loss_fn(output, y)
                     # Посчитаем ошибку
@@ -182,7 +176,6 @@ def main(model):
         for param in ModelTmp.parameters():
             param.grad = None
         ModelTmp.head = None
-        model = model.to('cpu')
         gc.collect()
         torch.cuda.empty_cache()
         # Выведем итоговые результаты для блока
