@@ -4,7 +4,7 @@ import gc
 import torch
 
 class MetricCollector:
-    """Сборщик метрик обучения
+    """Сборщик метрик обучения.
     """
     def __init__(self, num_blocks, num_iter):
         """
@@ -44,7 +44,7 @@ class MetricCollector:
         return self.train_acc_sum[n], self.train_err_sum[n], self.val_acc_sum[n], self.val_err_sum[n]
 
 def plot_summary(collector):
-    """Выводит 4 графика:
+    """Выводит 4 графика.
     Accuracy = f(depth)
     Error = f(depth)
     Accuracy = f(num_batches)
