@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ModelBuilder(nn.Module):
-    """Класс, строящий текущую модель для обучения
+    """Класс, строящий текущую модель для обучения.
     """
     def __init__(self, model, AllBlocks, n):
         super(ModelBuilder, self).__init__()
